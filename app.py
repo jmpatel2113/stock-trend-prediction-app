@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import yfinance as yf
 from keras.models import load_model
 import streamlit as st
+from datetime import datetime, timedelta
 
 
 st.set_page_config(
@@ -12,8 +13,10 @@ st.set_page_config(
 )
 st.title("Stock Trend Prediction App")
 
-start_date = '2012-01-01'
-end_date = '2023-12-31'
+end_date = datetime.today().date()
+start_date = end_date - timedelta(days=365*10)
+end_date = end_date.strftime('%Y-%m-%d')
+start_date = start_date.strftime('%Y-%m-%d')
 
 user_input = st.text_input("Enter Stock Ticker", 'AAPL')
 df = yf.download(user_input, start=start_date, end=end_date)
@@ -28,13 +31,14 @@ fig = plt.figure(figsize=(12,6))
 plt.plot(df.Close)
 st.pyplot(fig)
 
-st.subheader("Closing Price vs Time Chart with 100MA")
+st.subheader("Closing Price vs Time Chart with 100MA & 200MA")
 ma100 = df.Close.rolling(100).mean()
 ma200 = df.Close.rolling(200).mean()
 fig = plt.figure(figsize=(12,6))
-plt.plot(ma100)
-plt.plot(ma200)
+plt.plot(ma100, 'orange', label="100MA")
+plt.plot(ma200, 'green', label="200MA")
 plt.plot(df.Close)
+plt.legend()
 st.pyplot(fig)
 
 # Splitting Data into Training and Testing
@@ -79,8 +83,8 @@ y_test = y_test*scale_factor
 # Final Predicted Graph
 st.subheader("Predictions vs Original")
 fig1 = plt.figure(figsize=(12,6))
-plt.plot(y_test, 'b', label="Original Trend Price")
-plt.plot(y_predict, 'r', label="Predicted Trend Price")
+plt.plot(y_test, 'blue', label="Original Trend Price")
+plt.plot(y_predict, 'red', label="Predicted Trend Price")
 plt.xlabel("Time")
 plt.ylabel("Price")
 plt.legend()
